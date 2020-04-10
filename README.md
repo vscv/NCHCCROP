@@ -13,4 +13,62 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 
 ==============================================
 ## 簡單做法
-現在單機切圖很方便，以下為MacBookPro單機切圖範例：()
+現在單機切圖很方便，以下為MacBookPro單機切圖範例：((在mount google的雲端硬碟上執行可能拖慢了速度))
+
+清一下暫存
+▶ rm tiles/*
+
+▶ identify taoyuan_airport.tif_2.tif
+ taoyuan_airport.tif_2.tif TIFF 7629x6993 7629x6993+0+0 8-bit sRGB 152.635MiB 0.010u 0:00.006
+ 
+▶ time magick taoyuan_airport.tif_2.tif -crop 2000x2000 tiles/tiles%03d.jpg
+ ===============
+ CPU    328%
+ User    6.029
+ System    1.897
+ Total    2.415
+ 
+ ▶ time magick taoyuan_airport.tif_2.tif -crop 500x500 tiles/tiles%03d.jpg
+ ===============
+ CPU    140%
+ User    3.541
+ System    1.084
+ Total    3.286
+ 
+ 
+ ▶ identify Taipei2tif.tif
+Taipei2tif.tif TIFF 13343x15752 13343x15752+0+0 8-bit sRGB 601.327MiB 0.030u 0:00.028
+
+▶ time magick Taipei2tif.tif -crop 1000x1000 tiles/tiles%03d.jpg
+ ===============
+ CPU    260%
+ User    22.540
+ System    7.132
+ Total    11.383
+
+ ▶ ls -l tiles | wc -l
+     225
+     
+▶ time magick Taipei2tif.tif -crop 200x200 tiles/tiles%03d.jpg
+===============
+CPU	26%
+User	14.571
+System	3.618
+Total	1:08.55 (?)
+
+▶ ls -l tiles | wc -l
+    5294
+
+▶ identify PIA23405.tif
+PIA23405.tif TIFF 15950x6500 15950x6500+0+0 8-bit sRGB 170.014MiB 0.000u 0:00.008 
+
+▶ time magick PIA23405.tif -crop 1024x1024 tiles/tiles%03d.jpg
+===============
+CPU    157%
+User    9.587
+System    3.319
+Total    8.201
+
+▶ ls -l tiles | wc -l                                         
+     113
+
