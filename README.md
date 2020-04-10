@@ -6,7 +6,6 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 
 ## 注意
 * 僅供回憶Bash語法使用
-* 本專案只是撒12份出去(印象中...)，沒有再把各節點的thread再細分一次多工處理，且每一分都用迴圈重複crop分到的sub-image，因此效能還有待加強。
 * 在需要做很多層LoD時效能比較好，如果只是單張大圖切一層，現在的PC/notebook的效能都會比分散式的好喔。
 * 只限在已經設好ssh通行的環境(PC叢集一般沒問題都預設好ssh-key了)
 
@@ -99,7 +98,7 @@ Total	1:08.55 (?)
 PIA23405.tif TIFF 15950x6500 15950x6500+0+0 8-bit sRGB 170.014MiB 0.000u 0:00.008 
 
 ▶ time magick PIA23405.tif -crop 1024x1024 tiles/tiles%03d.jpg
-===============
+\===============
 CPU    157%
 User    9.587
 System    3.319
