@@ -11,7 +11,7 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 * 只限在已經設好ssh通行的環境(PC叢集一般沒問題都預設好ssh-key了)
 
 ## method
-
+![image](img/投影片3.jpeg)
 
 
 ==============================================
