@@ -57,6 +57,7 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
  taoyuan_airport.tif_2.tif TIFF 7629x6993 7629x6993+0+0 8-bit sRGB 152.635MiB 0.010u 0:00.006
  
 ▶ time magick taoyuan_airport.tif_2.tif -crop 2000x2000 tiles/tiles%03d.jpg
+ 
  ===============
  CPU    328%
  User    6.029
@@ -64,6 +65,7 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
  Total    2.415
  
  ▶ time magick taoyuan_airport.tif_2.tif -crop 500x500 tiles/tiles%03d.jpg
+ 
  ===============
  CPU    140%
  User    3.541
@@ -75,6 +77,7 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
 Taipei2tif.tif TIFF 13343x15752 13343x15752+0+0 8-bit sRGB 601.327MiB 0.030u 0:00.028
 
 ▶ time magick Taipei2tif.tif -crop 1000x1000 tiles/tiles%03d.jpg
+ 
  ===============
  CPU    260%
  User    22.540
@@ -85,6 +88,7 @@ Taipei2tif.tif TIFF 13343x15752 13343x15752+0+0 8-bit sRGB 601.327MiB 0.030u 0:0
      225
      
 ▶ time magick Taipei2tif.tif -crop 200x200 tiles/tiles%03d.jpg
+
 ===============
 CPU	26%
 User	14.571
@@ -98,7 +102,8 @@ Total	1:08.55 (?)
 PIA23405.tif TIFF 15950x6500 15950x6500+0+0 8-bit sRGB 170.014MiB 0.000u 0:00.008 
 
 ▶ time magick PIA23405.tif -crop 1024x1024 tiles/tiles%03d.jpg
-\===============
+
+===============
 CPU    157%
 User    9.587
 System    3.319
