@@ -49,8 +49,9 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
 
 
 ==============================================
+
 ## 簡單做法
-現在單機切圖很方便，以下為MacBookPro單機切圖範例：((在mount google的雲端硬碟上執行可能拖慢了速度)), 單位為秒。
+現在單機切圖很方便，以下為MacBookPro單機切圖範例單位為秒： 
 
 	清一下暫存
 	▶ rm tiles/*
@@ -64,7 +65,7 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
 	 CPU    328%
 	 User    6.029
 	 System    1.897
-	 Total    2.415
+	 *Total    2.415
 
 	 ▶ time magick taoyuan_airport.tif_2.tif -crop 500x500 tiles/tiles%03d.jpg
 
