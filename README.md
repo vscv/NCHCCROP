@@ -10,8 +10,39 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 * 在需要做很多層LoD時效能比較好，如果只是單張大圖切一層，現在的PC/notebook的效能都會比分散式的好喔。
 * 只限在已經設好ssh通行的環境(PC叢集一般沒問題都預設好ssh-key了)
 
+## Run
+1. Pre-Run
+For ROOT dir setup. Place "export NchcTsbCropRootDir=[Where the script dir]" or write in ~username/.bashrc.
+It will be need to get home dir.
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+
+2. How to run
+You can run LevelImageCrop for 1.[image leveling] 2.[Crop image to setting piece size].
+Or just run MainImageCrop in local machine for [Crop image to setting piece size].
+
+	./LevelImageCrop
+	./DistriImageCrop
+	./MainImageCrop
+
+
+NOTE:
+DsitriNodeDirPrefix="/scratch/local" is for medusa, if you want run on your machine you should change some dir parameter.
+if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
+---->>""$DsitriNodeDirPrefix"/"$DistriOutImage""
+--->> ""/"$DistriOutImage" -->> /OUTDIR in root path not local path.
+
 ## method
+
 ![image](img/投影片3.jpeg)
+
+![image](img/投影片9.jpeg)
+
+![image](img/投影片10.jpeg)
+
+![image](img/投影片11.jpeg)
+
+
 
 
 ==============================================
