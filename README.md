@@ -10,6 +10,9 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 * 在需要做很多層LoD時效能比較好，如果只是單張大圖切一層，現在的PC/notebook的效能都會比分散式的好喔。
 * 只限在已經設好ssh通行的環境(PC叢集一般沒問題都預設好ssh-key了)
 
+## method
+
+
 
 ==============================================
 ## 簡單做法
