@@ -103,12 +103,12 @@ PIA23405.tif TIFF 15950x6500 15950x6500+0+0 8-bit sRGB 170.014MiB 0.000u 0:00.00
 
 ▶ time magick PIA23405.tif -crop 1024x1024 tiles/tiles%03d.jpg
 
->===============
-CPU    157%
-User    9.587
-System    3.319
-Total    8.201
+	===============
+	CPU    157%
+	User    9.587
+	System    3.319
+	Total    8.201
 
-▶ ls -l tiles | wc -l                                         
-     113
+	▶ ls -l tiles | wc -l                                         
+	     113
 
