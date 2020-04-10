@@ -48,7 +48,7 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
 
 ==============================================
 ## 簡單做法
-現在單機切圖很方便，以下為MacBookPro單機切圖範例：((在mount google的雲端硬碟上執行可能拖慢了速度))
+現在單機切圖很方便，以下為MacBookPro單機切圖範例：((在mount google的雲端硬碟上執行可能拖慢了速度)), 單位為秒。
 
 	清一下暫存
 	▶ rm tiles/*
