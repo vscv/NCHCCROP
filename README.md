@@ -35,7 +35,7 @@ if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
 ---->>""$DsitriNodeDirPrefix"/"$DistriOutImage""
 --->> ""/"$DistriOutImage" -->> /OUTDIR in root path not local path.
 
-## method
+## Method
 
 ![image](img/投影片3.jpeg)
 
