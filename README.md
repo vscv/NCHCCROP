@@ -2,7 +2,9 @@
 A very very old distributed image split/crop practice using Bash and ImageMagick.
 
 ## 前言
-超大高解析度影像切格/截圖，大約是在2006~2007年間對大型空照/衛照圖原始圖轉換成in-house displayer, TSB, Google Map等可用的LoD多解析度小圖需求下，利用12+1的電腦叢集(TDW, tiled display wall  cluster)將各切圖task藉由ssh分散到各節點中執行，檔案則放在master node的/shm(仿ram disk)中讓各節點可以同時access。本專案完全使用BASH語法，多數是在計算與處理一些切割檔案的尺寸變數而已，最後由ImageMagick的convert工具進行裁切。
+超大高解析度影像切割/截圖/切圖，大約是在2006~2007年間對大型空照/衛照圖原始圖轉換成in-house displayer, TSB, Google Map等可用的LoD多解析度小圖需求下，利用12+1的電腦叢集(TDW, tiled display wall  cluster)將各切圖task藉由ssh分散到各節點中執行，檔案則放在master node的/shm(仿ram disk)中讓各節點可以同時access。本專案完全使用BASH語法，多數是在計算與處理一些切割檔案的尺寸變數而已，最後由ImageMagick的convert工具進行裁切。
+
+ps.現在的電腦可輕易處理切圖請見 - [簡單做法](#簡單做法)
 
 ## 注意
 * 僅供回憶Bash語法使用
