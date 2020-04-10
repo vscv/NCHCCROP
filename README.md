@@ -12,12 +12,14 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 
 ## Run
 1. Pre-Run
+
 For ROOT dir setup. Place "export NchcTsbCropRootDir=[Where the script dir]" or write in ~username/.bashrc.
 It will be need to get home dir.
 CROPHOME="$NchcTsbCropRootDir"
 INCLUDE="$CROPHOME/include"
 
 2. How to run
+
 You can run LevelImageCrop for 1.[image leveling] 2.[Crop image to setting piece size].
 Or just run MainImageCrop in local machine for [Crop image to setting piece size].
 
