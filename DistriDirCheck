@@ -1,0 +1,61 @@
+#!/bin/sh
+
+##
+##  for check dir in node:/dir
+##
+
+
+##"$DsitriNodeDirPrefix" "$NowOfLevel"
+NumOfArg="$#"
+NumOfArgCheck="3"
+DsitriNodeDirPrefix=$1
+OutputDir=$2
+NowOfLevel=$3
+RootDir=`pwd`
+
+
+PrintUsageAndExitMain()
+{
+  echo "Usage: $0 DsitriNodeDirPrefix OutputDir NowOfLevel"
+  echo "Exit!!"
+  exit;
+}
+
+
+CheckArg()
+{
+  if [ ! $NumOfArg -eq $NumOfArgCheck ];then
+    PrintUsageAndExitMain
+  fi;
+}
+
+
+CheckDistriOutputDir()
+{
+  if [ ! -d $DsitriNodeDirPrefix ];then
+    echo "Create Distri out put dir $DsitriNodeDirPrefix"
+   mkdir $DsitriNodeDirPrefix
+  fi
+
+  if [ ! -d $DsitriNodeDirPrefix/$OutputDir ];then
+    echo "Create out put dir $DsitriNodeDirPrefix/$OutputDir"
+    mkdir $DsitriNodeDirPrefix/$OutputDir
+  fi;
+
+  if [ ! -d $DsitriNodeDirPrefix/$OutputDir/$NowOfLevel ];then
+    echo "Create out put dir $DsitriNodeDirPrefix/$OutputDir/$NowOfLevel"
+    mkdir $DsitriNodeDirPrefix/$OutputDir/$NowOfLevel
+  fi;
+}
+
+
+##  whole function here.
+main()
+{
+  CheckArg
+  CheckDistriOutputDir
+}
+
+
+##  run.
+main

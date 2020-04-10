@@ -1,0 +1,82 @@
+#!/bin/bash
+
+
+#################################################################
+#								#
+#	2007.01.30						#
+#	Crop and named large image to many small clip in 	#
+#	distribute.						#
+#	shiwei.							#	
+#								#
+#################################################################
+
+##  include ImageCropHeader
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+source "$INCLUDE/_ImageCropHeader_"
+
+NumOfArg="$#"
+NumOfArgCheck="6"
+OriginImageName="$1"
+CropSizeW="$2"
+CropSizeH="$3"
+NumOfNode="$4"
+NowOfLevel="$5"
+
+##  This two parameter MultiRegionOffSetX, MultiRegionOffSetY is 
+##  piece-image location of origin-image in distribution.
+##  These will be args of MainImageCrop.sh.
+##  These will be created form distribtue function.
+#MultiRegionOffSetX=
+#MultiRegionOffSetY=
+
+
+
+OriginImageWidth=""
+OriginImageHeight=""
+
+## DIR 
+TempfsDir=/dev/shm
+RootDir=`pwd`
+
+##  Create out put dir.
+OutputDir="$6"
+
+## DsitriNodeDirPrefix="/scratch/local" is for medusa client-server, if you want run DistriImageCrop in multi-node in your single machine you should change some dir parameter for fit this.
+##  if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
+##  ---->>""$DsitriNodeDirPrefix"/"$DistriOutImage""
+##  --->> ""/"$DistriOutImage" -->> /OUTDIR in root path not local path.
+DsitriNodeDirPrefix="/scratch/local"
+#DsitriNodeDirPrefix="/home/shiwei/NchcTsbCrop/CCTEMP"
+
+
+#										  #			
+#  =============================================================================  # 
+#
+
+
+##  Assemble the function in Main().
+Main()
+{
+  echo ""
+  echo ""
+  echo " ===================== DistriImageCrop ===================== "
+  echo ""
+  echo ""
+
+  ## Check the input args, dir, image.
+  DistriCheckArg
+  DistriCheckDirAndImage
+
+  ## Multi node
+  DistriComputeCropCommandMultiNode
+  
+  ##  This two function will run on MainImageCrop not here. 
+  ##  One node.
+  #ComputeCropCommandOneNode 
+  #CreatCropImageHTHL
+}
+
+
+##  Run the whole functions in Main().
+Main

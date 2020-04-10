@@ -1,0 +1,114 @@
+#!/bin/bash
+
+
+#################################################################
+#								#
+#	2007.01.16						#
+#	convert origin image to some levels.      		#
+#	shiwei.							#	
+#								#
+#################################################################
+
+##  include ImageCropHeader
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+source "$INCLUDE/_ImageCropHeader_"
+
+NumOfArg="$#"
+NumOfArgCheck="6"
+OriginImageName="$1"
+NumOfLevel="$2"
+NumOfNode="$3"
+CropSizeW="$4"
+CropSizeH="$5"
+
+StandardWidth="1024"
+StandardHeight="768"
+
+## DIR
+TempfsDir="/dev/shm"
+RootDir=`pwd`
+
+##  Create out put dir.
+OutputDir="$6"
+
+
+#										  #			
+#  =============================================================================  # 
+#
+
+
+##  main function
+main()
+{
+  echo ""
+  echo ""
+  echo " ===================== LevelImageCrop ===================== "
+  echo ""
+  echo ""
+
+  LevelCheckEveryThing
+  
+  ##  NumberOfLevel=1, just use OriginImage no level image.
+  if [ $NumOfLevel -eq 1 ];then
+            
+    ##  If it need other node to crop, if yes how many node to do. 
+    ##  If just seting one node the node12 will to crop.
+    ##  
+    
+    ##  NumberOfNode=0 it mean use local to run level and crop.
+    if [ $NumOfNode -eq 0 ];then
+      echo "Run on local machine!!"
+      echo "NumOfNode = $NumOfNode"
+      LevelComputeZeroLevel 
+    fi
+    
+    ## NumberOfNode=1 it mean use one node to run but by user seting or default node#.
+    if [ $NumOfNode -eq 1 ];then
+    
+      echo "Run on one node you set!!"
+      echo "NumOfNode = $NumOfNode"
+      echo "Not ready!!" 
+  
+    fi
+    
+    ##  NumberOfNode<=2 it mean use multi node to run and 
+    if [ $NumOfNode -ge 2 ];then
+      echo "Run on multi node!!"
+      echo "NumOfNode = $NumOfNode"
+      echo "Not ready!!"
+      exit     
+    fi
+    
+  ##  NumberOfLevel -ge 2, more then 2 level image will be created.
+  ##  Re-Level image size do not need run on multi-node. 
+  else
+    ##  NumberOfNode=0 it mean use local to run level and crop.
+    if [ $NumOfNode -eq 0 ];then
+      echo "Run on local machine!!"
+      echo "NumOfNode = $NumOfNode"
+      LevelComputeLevelResize
+      #LevelComputeZeroLevel
+    else
+      if [ $NumOfNode -ge 2 ];then
+        echo "Run on distribution!!"
+        echo
+        LevelDistriComputeLevelResize
+        #LevelDistriComputeZeroLevel
+      else
+        if [ $NumOfNode -eq 1 ];then
+          echo "Run on One Node!!"
+          #echo "Exit!!"
+          LevelDistriComputeLevelResize
+          #LevelDistriComputeZeroLevel
+          #exit
+        fi
+       fi
+    fi  
+  fi
+}
+
+## run
+main
+
+

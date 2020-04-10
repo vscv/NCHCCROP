@@ -1,0 +1,71 @@
+#!/bin/bash
+
+
+#################################################################
+#								#
+#	2007.01.16						#
+#	Crop and named large image to many small clip.		#
+#	shiwei.							#	
+#								#
+#################################################################
+
+##  include ImageCropHeader
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+source "$INCLUDE/_ImageCropHeader_"
+
+NumOfArg="$#"
+NumOfArgCheck="6"
+OriginImageName="$1"
+CropSizeW="$2"
+CropSizeH="$3"
+
+##  This two parameter MultiRegionOffSetX, MultiRegionOffSetY is 
+##  piece-image location of origin-image
+MultiRegionOffSetX=$4
+MultiRegionOffSetY=$5
+
+
+
+OriginImageWidth=""
+OriginImageHeight=""
+
+## DIR 
+TempfsDir=/dev/shm
+RootDir=`pwd`
+##  Create out put dir.
+OutputDir="$6"
+
+
+#										  #			
+#  =============================================================================  # 
+#										  #
+
+
+##  Assemble the function in Main().
+Main()
+{  
+  echo ""
+  echo ""
+  echo "===================== MainImageCrop ====================="
+  echo ""
+  echo ""
+  
+  MainCheckArg
+  MainCheckDirAndImage
+  
+  ##  This two old function is I/O load in each convert time. New function will use
+  ##  "convert -crop 500x500 Petco1920_4k.jpg out.jpg" output out-xxx.jpg.
+
+  #MainComputeCropCommandOneNode 
+  #MainCreatCropImageHTHL
+ 
+  ##  New function just I/O one time for each distribute or leveling image. 
+  ##  "convert -crop 500x500 Petco1920_4k.jpg out.jpg" output out-xxx.jpg. 
+  NewMainComputeCropCommandOneNode 
+  NewMainCreatCropImageHTHL
+}
+
+
+##  Run the whole functions in Main().
+Main
