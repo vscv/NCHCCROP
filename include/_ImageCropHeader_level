@@ -1,0 +1,324 @@
+#!/bin/sh
+
+##
+##  Header Function Of Image Crop Tool. [ level image crop ].
+##
+
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+StandardWidth="1024"
+StandardHeight="768"
+StandardZero="0"
+StandardOne="1"
+
+
+## =============================  LevelImageCrop ============================= ##
+##  Print the Usage and exit.
+LevelPrintUsageAndExitMain()
+{
+  echo "Usage: $0 OriginImageName NumOfLevel NumOfNode CropSizeW CropSizeH OutputDir"
+  echo "Exit!!"
+  exit;
+}
+
+LevelCheckNumberOfArg()
+{
+  if [ ! $NumOfArg -eq $NumOfArgCheck ];then
+    LevelPrintUsageAndExitMain
+  else
+    echo "
+    Input arg :
+    OriginImageName=$OriginImageName
+    NumOfLevel=$NumOfLevel
+    NumOfNode=$NumOfNode
+    CropSizeW=$CropSizeW
+    CropSizeH=$CropSizeH
+    OutputDir=$OutputDir
+    "
+  fi;	      
+}
+
+
+##  Check tempfs (shm) dir is mounted.
+LevelCheckTempfsDir()
+{
+  if [ ! -d $TempfsDir ];then
+    echo "The tempfs dir \"$TempfsDir\"] not exist."
+    echo "Please check \"tempfs\" or \"$TempfsDir\" mount seting. Exit."
+    exit
+  fi;
+}
+
+
+##  Check OutputDir is exist or create.
+LevelCheckCropOutputDir()
+{
+  if [ ! -d $OutputDir ];then
+    echo "Create out put dir \"$OutputDir\"."
+    mkdir $OutputDir
+  fi;
+}
+
+
+##  Check OutputDir/Level is exist or create.
+LevelCheckCropOutputLevelDir()
+{
+  if [ ! -d $OutputDir/$TempLevel ];then
+    echo "Create out put dir \"$OutputDir/$TempLevel\"."
+    mkdir $OutputDir/$TempLevel
+  fi;
+}
+	    
+
+LevelCheckDistriCropOutputLevelDir()
+{
+  if [ ! -d $OutputDir/$DistriTempLevel ];then
+    echo "Create out put dir \"$OutputDir/$DistriTempLevel\"."
+    mkdir $OutputDir/$DistriTempLevel
+  fi;
+}
+
+
+##  OLD VERSION.	    
+##  Check origin image is already in tempfs (shm) mount dir Or copy origin image to shm.
+LevelOLD_LevelCheckOriginImageInTempfsDir()
+{
+  ## If image is exist in local dir ./ then pass.
+  if [ -f $RootDir/$OriginImageName ];then
+    ##  If image if exist in /dev/shm then pass. or copy image to /dev/shm.
+    if [ ! -f $TempfsDir/$OriginImageName ];then
+      echo "Copy $OriginImageName to \"$TempfsDir\"."
+      echo `cp $OriginImageName $TempfsDir/$OriginImageName`
+    fi
+       else
+       echo "The image file $RootDir/$OriginImageName not exist. Exit."
+       exit
+  fi;					
+}
+
+
+##  Check origin image is already in tempfs (shm) mount dir Or copy origin image to shm.
+LevelCheckOriginImageInTempfsDir()
+{ 
+  ## If image is exist in local dir ./ then pass.
+  if [ -f $OriginImageName ];then
+    ##  If image if exist in /dev/shm then pass. or copy image to /dev/shm.
+    ##  In no Level local machine.
+    if [ ! -f $TempfsDir/$OriginImageName ];then
+      echo
+      echo "Copy $OriginImageName from $RootDir to $TempfsDir."
+      echo `cp $OriginImageName $TempfsDir/$OriginImageName`
+      echo
+      OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+      OriginImageHeight=`identify -format "%h" $TempfsDir/$OriginImageName`
+    else
+      echo
+      echo "$OriginImageName already in $RootDir and $TempfsDir."
+      echo
+      OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+      OriginImageHeight=`identify -format "%h" $TempfsDir/$OriginImageName`
+    fi
+  else
+    echo
+    echo "The image file $OriginImageName not in $RootDir."
+    echo "Go to $OutputDir/ to find out."
+    echo
+    if [ -f $OutputDir/$OriginImageName ];then
+      echo
+      echo " Yes, i founed the $OutputDir/$OriginImageName here !!"
+      echo
+      if [ ! -f $TempfsDir/$OriginImageName ];then
+        echo
+	echo "Copy $OriginImageName from $OutputDir to $TempfsDir\"$TempfsDir\"."
+        echo `cp $OutputDir/$OriginImageName $TempfsDir/$OriginImageName`
+        echo
+	OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+        OriginImageHeight=`identify -format "%h"  $TempfsDir/$OriginImageName`
+      else
+        echo
+        echo "$OriginImageName already in $TempfsDir."
+	echo
+	OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+        OriginImageHeight=`identify -format "%h"  $TempfsDir/$OriginImageName`
+      fi
+    else
+      echo
+      echo "The image file $OriginImageName not in $OutputDir. Exit!!!!"
+      echo "You should run by LevelImageCrop.sh or just put image there."
+      echo
+      exit
+    fi
+  fi;
+}
+
+
+LevelCheckEveryThing()
+{
+  LevelCheckNumberOfArg
+  LevelCheckTempfsDir
+  LevelCheckCropOutputDir
+  LevelCheckOriginImageInTempfsDir;
+}
+
+##  re-level must be 2 times large than standard image size.
+LevelIsOriginImageLargeThanStandardSize()
+{
+  DoubleW=`expr 2 \* $StandardWidth`
+  DoubleH=`expr 2 \* $StandardHeight`
+  echo "DoubleW =$DoubleW"
+  echo "DoubleH =$DoubleH"
+  
+  #if [ "$OriginImageWidth -gt $DoubleW" -a "$OriginImageHeight -gt $DoubleH" ];then
+  if [ $OriginImageWidth -gt $DoubleW  -a $OriginImageHeight -gt $DoubleH ];then
+    echo " TRUE"
+    echo "The Origin image is large than min size."
+  #  return 0   ## Shell TRUE as 0.
+  else
+    echo " FALSE"
+    echo " The Origin image is too small to resize. EXIT!!!"
+    exit
+  #  return 1   ## Shell FALSE as 1.
+  fi;
+}
+
+
+##  Compute the each level's resize % at origin image.
+##  Use square need sqrt to reduce the increse rate of w*h.
+##  In case here use Width to compute the resize %.
+LevelComputeLevelResizePercent()
+{
+  TempResizeLevelNum=$1
+  Percent=100
+  
+  ##  Use Square is better but it should do sqrt....from now it can not be implement.
+  ##
+  #StandardSquare=`expr $StandardWidth \* $StandardHeight`
+  #OriginImageSquare=`expr $OriginImageWidth \* $OriginImageHeight`
+  #echo $StandardSquare
+  #echo $OriginImageSquare
+  
+  WidthDist=`expr $OriginImageWidth - $StandardWidth`
+  WidthDistDivid=`expr $WidthDist / $NumOfLevel`
+  WidthDistDividPercent=`expr $WidthDistDivid \* $Percent / $WidthDist`
+  echo "WidthDist=$WidthDist"
+  echo "WidthDistDivid=$WidthDistDivid"
+  echo "WidthDistDividPercent=$WidthDistDividPercent"
+   
+  LevelResizePercent=`expr $WidthDistDividPercent \* $TempResizeLevelNum`
+  echo "LevelResizePercent = $LevelResizePercent"
+ 
+  CommandLevel="convert -resize "$LevelResizePercent"% "$TempfsDir"/"$OriginImageName" "$RootDir"/"$OutputDir"/"$TempResizeLevelNum"/"$TempResizeLevelNum"_"$OriginImageName""
+  
+  CommandCrop=""$RootDir"/MainImageCrop "$TempResizeLevelNum"_"$OriginImageName" "$CropSizeW" "$CropSizeH" 0 0 "$RootDir"/"$OutputDir"/"$TempResizeLevelNum""
+    
+  echo "$CommandLevel"
+  echo `$CommandLevel`
+
+  echo "$CommandCrop"
+  echo `$CommandCrop`;
+}
+
+
+##  This function decide how many level will be created.
+##  NumOfLevel=1, means using original image, 2, means create one  second size level, and so on.
+##  The OriginImage's NumOfLevel is "0".
+LevelComputeLevelResize()
+{  
+  TempLevel=1
+
+  ##  check the OriginImage size is need to re-level or not.
+  LevelIsOriginImageLargeThanStandardSize
+  ##  If LevelIsOriginImageLargeThanStandardSize if TRUE default retrun is "0", 
+  ##  and use $? to get it. TRUE means the image can be re-level.
+  ##  echo "$?"
+  ##  in shell, TRUE as in 0, FALSE as in 1. So inverse it.
+  
+  ##  while loop times = NumOfLevel's number.
+  while [ $TempLevel -lt $NumOfLevel ]
+  do
+    echo "Re-Level in level[$TempLevel]!!"
+    echo "NumOfLevel = $NumOfLevel" "NowOfLevel = $TempLevel"
+    LevelCheckCropOutputLevelDir 
+    LevelComputeLevelResizePercent $TempLevel
+    TempLevel=`expr $TempLevel + 1` 
+  done;
+}
+
+
+##  0-level (Crop Origin Image).
+##  Note: Global-Path maybe alright see ".html" on local machine but maybe not remote machine. ("$RootDir"/"$OutputDir"/"Zero")
+##  If ".html" can not saw on your machine it should be modify to ("$OutputDir"/"Zero") local path.
+LevelComputeZeroLevel()
+{
+  ./MainImageCrop "$OriginImageName" "$CropSizeW" "$CropSizeH" 0 0 "$RootDir"/"$OutputDir"/"Zero";
+}
+
+
+#----------------------------------------------Distri------------------------------------------------------------#
+DistriComputeLevelResizePercent()
+{
+  DistriTempResizeLevelNum=$1
+  Percent=100
+  
+  ##  Use Square is better but ....from now it can not be implement.
+  ##
+  #StandardSquare=`expr $StandardWidth \* $StandardHeight`
+  #OriginImageSquare=`expr $OriginImageWidth \* $OriginImageHeight`
+  #echo $StandardSquare
+  #echo $OriginImageSquare
+  
+  DistriWidthDist=`expr $OriginImageWidth - $StandardWidth`
+  DistriWidthDistDivid=`expr $DistriWidthDist / $NumOfLevel`
+  DistriWidthDistDividPercent=`expr $DistriWidthDistDivid \* $Percent / $DistriWidthDist`
+  echo "DistriWidthDist=$DistriWidthDist"
+  echo "DistriWidthDistDivid=$DistriWidthDistDivid"
+  echo "DistriWidthDistDividPercent=$DistriWidthDistDividPercent"
+   
+  DistriLevelResizePercent=`expr $DistriWidthDistDividPercent \* $DistriTempResizeLevelNum`
+  echo "DistriLevelResizePercent = $DistriLevelResizePercent"
+ 
+  DistriCommandLevel="convert -resize "$DistriLevelResizePercent"% "$TempfsDir"/"$OriginImageName" "$RootDir"/"$OutputDir"/"$DistriTempResizeLevelNum"/"$DistriTempResizeLevelNum"_"$OriginImageName""
+
+  echo "$DistriCommandLevel"
+  echo `$DistriCommandLevel`
+  
+  #ReLevelOutImageName=""$DistriTempResizeLevelNum"_"$OriginImageName""
+  
+  DistriCommandCrop=""$RootDir"/DistriImageCrop "$DistriTempResizeLevelNum"_"$OriginImageName" "$CropSizeW" "$CropSizeH" $NumOfNode $DistriTempResizeLevelNum "$OutputDir""
+    
+  echo "$DistriCommandCrop"
+  echo `$DistriCommandCrop`;
+}
+
+
+LevelDistriComputeLevelResize()
+{  
+  DistriTempLevel=1
+
+  ##  check the OriginImage size is need to re-level or not.
+  LevelIsOriginImageLargeThanStandardSize
+  ##  If LevelIsOriginImageLargeThanStandardSize if TRUE default retrun is "0", 
+  ##  and use $? to get it. TRUE means the image can be re-level.
+  ##  echo "$?"
+  ##  in shell RETURN VALUE, TRUE as in 0, FALSE as in 1. So inverse it.
+  
+  ##  while loop times = NumOfLevel's number.
+  while [ $DistriTempLevel -lt $NumOfLevel ]
+  do
+    echo "Re-Level in level[$TempLevel]!!"
+    echo "NumOfLevel = $NumOfLevel" "NowOfLevel = $DistriTempLevel"
+    LevelCheckDistriCropOutputLevelDir 
+    DistriComputeLevelResizePercent $DistriTempLevel
+    DistriTempLevel=`expr $DistriTempLevel + 1` 
+  done;
+}
+
+
+LevelDistriComputeZeroLevel()
+{
+  ./DistriImageCrop "$OriginImageName" "$CropSizeW" "$CropSizeH" 1 Zero "$OutputDir"/"Zero";
+}
+#----------------------------------------------Distri------------------------------------------------------------#
+
+
+## =============================  LevelImageCrop  ============================= ##

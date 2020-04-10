@@ -1,0 +1,20 @@
+#!/bin/sh
+
+##
+##  Header Function Of Image Crop Tool. [ header ].
+##
+
+
+StandardWidth="1024"
+StandardHeight="768"
+StandardZero="0"
+StandardOne="1"
+
+#INCLUDE="./include"
+INCLUDE="/home/user/NchcTsbCrop/include"
+
+source "$INCLUDE/_ImageCropHeader_level"
+source "$INCLUDE/_ImageCropHeader_distri"
+source "$INCLUDE/_ImageCropHeader_main"
+source "$INCLUDE/_ImageCropHeader_disdir"
+source "$INCLUDE/_ImageCropHeader_clearshm"

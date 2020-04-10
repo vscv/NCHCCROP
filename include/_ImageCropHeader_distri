@@ -1,0 +1,240 @@
+#!/bin/sh
+
+##
+##  Header Function Of Image Crop Tool. [ distri image crop ].
+##
+
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+StandardWidth="1024"
+StandardHeight="768"
+StandardZero="0"
+StandardOne="1"
+
+
+## =============================  DistriImageCrop  ============================= ##
+##  Print the Usage and exit.
+DistriPrintUsageAndExitMain()
+{
+  echo "Usage: $0 OriginImageName CropSizeW CropSizeH NumOfNode NowOfLevel OutputDir"
+  echo "Exit!!"
+  exit;
+}
+
+
+##  Check the numbers of input args.
+DistriCheckArg()
+{
+  if [ ! $NumOfArg -eq $NumOfArgCheck ];then
+    DistriPrintUsageAndExitMain
+  else
+    echo "
+    Input arg : 
+    OriginImageName=$OriginImageName
+    CropSizeW=$CropSizeW
+    CropSizeH=$CropSizeH
+    NumOfNode=$NumOfNode
+    NowOfLevel=$NowOfLevel
+    OutputDir=$OutputDir
+    "
+  fi;
+}
+
+
+##  Check tempfs (shm) dir is mounted.
+DistriCheckTempfsDir()
+{
+  if [ ! -d $TempfsDir ];then
+    echo "The tempfs dir \"$TempfsDir\"] not exist."
+    echo "Please check \"tempfs\" or \"$TempfsDir\" mount seting. Exit."
+    exit
+  fi;
+}
+
+
+##  Check OutputDir is exist or create.
+DistriCheckOutputDir()
+{
+  if [ ! -d $OutputDir ];then
+    echo "Create out put dir $OutputDir"
+    mkdir $OutputDir
+  fi
+
+  if [ ! -d "$OutputDir"/"$NowOfLevel" ];then
+    echo "Create out put dir ""$OutputDir"/"$NowOfLevel"""
+    mkdir "$OutputDir"/"$NowOfLevel"
+  fi;
+}
+
+
+DistriCheckDistriOutputDir()
+{
+  COMMANDCheckDistriDir="ssh  node`expr $TempHeightPosit + 1`  sh "$RootDir/DistriDirCheck" "$DsitriNodeDirPrefix" "$OutputDir" "$NowOfLevel""
+  echo `$COMMANDCheckDistriDir`
+}
+
+
+##  Check origin image is already in tempfs (shm) mount dir Or copy origin image to shm.
+DistriCheckOriginImageInTempfsDir()
+{ 
+  ## If image is exist in local dir ./ then pass.
+  if [ -f $OriginImageName ];then
+    ##  If image if exist in /dev/shm then pass. or copy image to /dev/shm.
+    ##  In no Level local machine.
+    if [ ! -f $TempfsDir/$OriginImageName ];then
+      echo
+      echo "Copy $OriginImageName from $RootDir to $TempfsDir."
+      echo `cp $OriginImageName $TempfsDir/$OriginImageName`
+      echo
+      OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+      OriginImageHeight=`identify -format "%h" $TempfsDir/$OriginImageName`
+    else
+      echo
+      echo "$OriginImageName already in $RootDir and $TempfsDir."
+      echo
+      OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+      OriginImageHeight=`identify -format "%h" $TempfsDir/$OriginImageName`
+    fi
+  else
+    echo
+    echo "The image file $OriginImageName not in $RootDir."
+    echo "Go to $OutputDir/ to find out."
+    echo
+    if [ -f $OutputDir/$NowOfLevel/$OriginImageName ];then
+      echo
+      echo " Yes, i founed the $OutputDir/$OriginImageName here !!"
+      echo
+      if [ ! -f $TempfsDir/$OriginImageName ];then
+        echo
+	    echo "Copy $OriginImageName from $OutputDir to $TempfsDir\"$TempfsDir\"."
+        #echo `cp $OutputDir/$OriginImageName $TempfsDir/$OriginImageName`
+        echo `cp $OutputDir/$NowOfLevel/$OriginImageName $TempfsDir/$OriginImageName`
+        echo
+	OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+        OriginImageHeight=`identify -format "%h"  $TempfsDir/$OriginImageName`
+      else
+        echo
+        echo "$OriginImageName already in $TempfsDir."
+	echo
+	OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+        OriginImageHeight=`identify -format "%h"  $TempfsDir/$OriginImageName`
+      fi
+    else
+      echo
+      echo "The image file $OriginImageName not in $OutputDir. Exit!!!!"
+      echo "You should run by LevelImageCrop.sh or just put image there."
+      echo
+      exit
+    fi
+  fi;
+}
+
+
+## Check origin image size and crop times.
+DistriCheckOriginImageSize()
+{
+  echo "$OriginImageName --> OriginImageWidth = $OriginImageWidth"
+  echo "$OriginImageName --> OriginImageHeight = $OriginImageHeight"
+  echo "CropSizeW = $CropSizeW, CropSizeH = $CropSizeH"
+  echo ;
+}
+
+
+## Check tempfs dir and origin image.
+DistriCheckDirAndImage()
+{
+ DistriCheckTempfsDir
+ DistriCheckOutputDir
+ DistriCheckOriginImageInTempfsDir
+ DistriCheckOriginImageSize
+}
+
+
+##  -----------------------------multi node-------------------------------------  ##
+
+##  This function will get the input (OriginImageName) imge and then distribute it to multi-imge, and SCP these mult-image to 
+##  multi-node, when distribution image is ready, run ./MaimImageCrop in each nodes by SSH.
+##
+##  The difference of ComputeCropCommandOneNode is the $CropSizeWH, it will be replace by DistriSizeW and DistriSizeH.
+##  And DistriSizeWH are computed by default.
+DistriComputeCropCommandMultiNode()
+{
+  AddOne=$StandardOne
+  
+  WidthPositStart=$StandardZero
+  HeightPositStart=$StandardZero
+  
+  
+  ############################################################################################################
+  #  node`expr $TempHeightPosit + 1` is already set right node's number, so this block do not need.
+  #TotalStepW=`expr $OriginImageWidth / $CropSizeW`
+  #TotalStepH=`expr $OriginImageHeight / $CropSizeH`
+  #StepForEachNodeW=`expr $TotalStepW / $NumOfNode`
+  #StepForEachNodeH=`expr $TotalStepH / $NumOfNode`
+  #DistriSizeH 
+  #TempHeightPositEnd = node#
+  #############################################################################################################
+  
+  
+  DistriSizeW=`expr $NumOfNode \* $CropSizeW`
+  DistriSizeH=`expr $NumOfNode \* $CropSizeH`
+
+  TempWidthPositEnd=`expr $OriginImageWidth / $DistriSizeW`
+  TempHeightPositEnd=`expr $OriginImageHeight / $DistriSizeH`
+  
+  ##  In no remainder case convert will output origin image as last crop piece(AddOne) because 
+  ##  "convert -geometry error", for this reason check "remainder" for "AddOne" or Not.
+  #
+  #WidthPositEnd=`expr $TempWidthPositEnd + $AddOne`  
+  #HeightPositEnd=`expr $TempHeightPositEnd + $AddOne`
+  #
+  if [ `expr $OriginImageWidth % $DistriSizeW` -eq "$StandardZero" ];then
+    WidthPositEnd=$TempWidthPositEnd
+  else
+    WidthPositEnd=`expr $TempWidthPositEnd + $AddOne`
+  fi
+  
+  if [ `expr $OriginImageHeight % $DistriSizeH` -eq "$StandardZero" ];then
+    HeightPositEnd=$TempHeightPositEnd
+  else
+    HeightPositEnd=`expr $TempHeightPositEnd + $AddOne`
+  fi
+  
+  ##  for debug
+  #echo $WidthPositStart $HeightPositStart $WidthPositEnd $HeightPositEnd
+  
+  for ((TempWidthPosit=$WidthPositStart;TempWidthPosit<$WidthPositEnd;TempWidthPosit++))
+  do
+     for ((TempHeightPosit=$HeightPositStart;TempHeightPosit<$HeightPositEnd;TempHeightPosit++))
+     do
+     
+     ##  convert -crop "$CropSizeW"x"$CropSizeH"+"$XOffSet"+"$YOffSet" $InImage $OutImage
+   
+     ##  Go to next Distribute image region. The step unit is $DistriSizeWH.
+     OffSetX=`expr $TempWidthPosit \* $DistriSizeW`
+     OffSetY=`expr $TempHeightPosit \* $DistriSizeH`
+
+     ##  Distribute OriginImage to MultiRegion image and scp these to node$.
+     ##  Distribute OrigimImage to multi-node.
+     DistriInImage=""$DistriSizeW"x"$DistriSizeH"+"$OffSetX"+"$OffSetY" "$TempfsDir"/"$OriginImageName""
+     DistriOutImage=""$OutputDir"/"$NowOfLevel"/L"$NowOfLevel"_x"$OffSetX"_y"$OffSetY"_w"$CropSizeW"_h"$CropSizeH"_"$OriginImageName""
+     DistriOutImageName="L"$NowOfLevel"_x"$OffSetX"_y"$OffSetY"_w"$CropSizeW"_h"$CropSizeH"_"$OriginImageName""
+     COMMANDDistriLevel="convert -crop  $DistriInImage $DistriOutImage"
+
+     echo $COMMAND `$COMMANDDistriLevel`
+
+     ## check DIR on nodes.    
+     DistriCheckDistriOutputDir
+
+     ##  SCP MultiRegion (DistriOutImage) image to node$:/SameNameDir/
+     COMMANDScpDistriImageToNode="scp $DistriOutImage node`expr $TempHeightPosit + 1`:"$DsitriNodeDirPrefix"/"$DistriOutImage""
+     echo $COMMANDScpDistriImageToNode `$COMMANDScpDistriImageToNode`
+   
+     ##  Call MainImageCrop.sh to crop DistriOutImage.
+     COMMANDCallMainImageCrop="ssh node`expr $TempHeightPosit + 1` "$RootDir"/MainImageCrop "$DistriOutImageName" "$CropSizeW" "$CropSizeH" "$OffSetX" "$OffSetY" "$DsitriNodeDirPrefix"/"$OutputDir"/"$NowOfLevel""
+     echo $COMMANDCallMainImageCrop `$COMMANDCallMainImageCrop`
+  
+    done
+  done
+}
+## =============================  DistriImageCrop  ============================= ##

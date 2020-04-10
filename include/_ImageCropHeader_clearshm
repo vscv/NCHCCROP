@@ -1,0 +1,25 @@
+#!/bin/sh
+
+##
+##  Header Function Of Image Crop Tool. [ clear devshm ].
+##
+
+
+## =============================  Clear/devshm ============================= ##
+
+TempfsDir="/dev/shm"
+
+##  Clear user's /dev/shm file.
+ClearTempfsDir()
+{
+  for _File in $TempfsDir/*
+  do 
+  
+  _File_Name=`ls -l $_File`
+  _User_Name=`echo $_File_Name | cut -d ' ' -f 3`
+  echo $_User_Name
+  
+  done;
+}
+
+## =============================  Clear/devshm ============================= ##

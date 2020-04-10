@@ -1,0 +1,286 @@
+#!/bin/sh
+
+##
+##  Header Function Of Image Crop Tool. [ main image crop ].
+##
+
+CROPHOME="$NchcTsbCropRootDir"
+INCLUDE="$CROPHOME/include"
+StandardWidth="1024"
+StandardHeight="768"
+StandardZero="0"
+StandardOne="1"
+
+
+## =============================  MainImageCrop  ============================= ##
+##  Print the Usage and exit.
+MainPrintUsageAndExitMain()
+{
+  echo "Usage: $0 OriginImageName CropSizeW CropSizeH MultiRegionOffSetX MultiRegionOffSetY OutputDir"
+  echo "Exit!!"
+  exit;
+}
+
+
+##  Check the numbers of input args.
+MainCheckArg()
+{
+  if [ ! $NumOfArg -eq $NumOfArgCheck ];then
+    MainPrintUsageAndExitMain
+  else
+    echo "
+    Input arg : 
+    OriginImageName=$OriginImageName
+    CropSizeW=$CropSizeW
+    CropSizeH=$CropSizeH
+    MultiRegionOffSetX=$MultiRegionOffSetX
+    MultiRegionOffSetY=$MultiRegionOffSetY
+    OutputDir=$OutputDir
+    "
+  fi;
+}
+
+
+##  Check tempfs (shm) dir is mounted.
+MainCheckTempfsDir()
+{
+  if [ ! -d $TempfsDir ];then
+    echo "The tempfs dir \"$TempfsDir\"] not exist."
+    echo "Please check \"tempfs\" or \"$TempfsDir\" mount seting. Exit."
+    exit
+  fi;
+}
+
+
+##  Check OutputDir is exist or create.
+MainCheckOutputDir()
+{
+  if [ ! -d $OutputDir ];then
+    echo "Create out put dir \"$OutputDir\"."
+    mkdir $OutputDir
+  fi;
+}
+
+		
+##  Check origin image is already in tempfs (shm) mount dir Or copy origin image to shm.
+MainCheckOriginImageInTempfsDir()
+{ 
+  ## If image is exist in local dir ./ then pass.
+  if [ -f $OriginImageName ];then
+    ##  If image if exist in /dev/shm then pass. or copy image to /dev/shm.
+    ##  In no Level local machine.
+    if [ ! -f $TempfsDir/$OriginImageName ];then
+      echo
+      echo "Copy $OriginImageName from $RootDir to $TempfsDir."
+      echo `cp $OriginImageName $TempfsDir/$OriginImageName`
+      echo
+      OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+      OriginImageHeight=`identify -format "%h" $TempfsDir/$OriginImageName`
+    else
+      echo
+      echo "$OriginImageName already in $RootDir and $TempfsDir."
+      echo
+      OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+      OriginImageHeight=`identify -format "%h" $TempfsDir/$OriginImageName`
+    fi
+  else
+    echo
+    echo "The image file $OriginImageName not in $RootDir."
+    echo "Go to $OutputDir/ to find out."
+    echo
+    if [ -f $OutputDir/$OriginImageName ];then
+      echo
+      echo " Yes, i founed the $OutputDir/$OriginImageName here !!"
+      echo
+      if [ ! -f $TempfsDir/$OriginImageName ];then
+        echo
+	echo "Copy $OriginImageName from $OutputDir to $TempfsDir\"$TempfsDir\"."
+        echo `cp $OutputDir/$OriginImageName $TempfsDir/$OriginImageName`
+        echo
+	OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+        OriginImageHeight=`identify -format "%h"  $TempfsDir/$OriginImageName`
+      else
+        echo
+        echo "$OriginImageName already in $TempfsDir."
+	echo
+	OriginImageWidth=`identify -format "%w" $TempfsDir/$OriginImageName`
+        OriginImageHeight=`identify -format "%h"  $TempfsDir/$OriginImageName`
+      fi
+    else
+      echo
+      echo "The image file $OriginImageName not in $OutputDir. Exit!!!!"
+      echo "You should run by LevelImageCrop.sh or just put image there."
+      echo
+      exit
+    fi
+  fi;
+}
+
+
+## Check origin image size and crop times.
+MainCheckOriginImageSize()
+{
+  echo "$OriginImageName --> OriginImageWidth = $OriginImageWidth"
+  echo "$OriginImageName --> OriginImageHeight = $OriginImageHeight"
+  echo "CropSizeW = $CropSizeW, CropSizeH = $CropSizeH"
+  echo ;
+}
+
+
+## Check tempfs dir and origin image.
+MainCheckDirAndImage()
+{
+ MainCheckTempfsDir
+ MainCheckOutputDir
+ MainCheckOriginImageInTempfsDir
+ MainCheckOriginImageSize
+}
+
+
+## Compute the command of "convert -crop $geometry inputfile outputfile". 
+##
+## The step unit is $CropSizeW, and counting by Width/$CropSizeW and height/$CropSizeH.
+## $OriginImageWidth / $CropSizeW will find out the x-axis (Width) count if WidthPositEnd not set.
+## $OriginImageHeight / $CropSizeH will find out the y-axis (height) count if HeightPositEnd not set.
+##
+## Other note this function Let the croping include whole image even large one setp size ($CropSize).
+## If "TempWidthPosit<$WidthPositEnd" then croping skip last step size($CropSize).
+## If "TempWidthPosit<$WidthPositEnd + 1" then croping will include last step even here is no fill pixel.
+## This function should be write by "while", but i don't want to..:)
+## NOTE: WidthPositEnd    : skpi last step.
+## NOTE: WidthPositEnd + 1: include last setp.
+MainComputeCropCommandOneNode()
+{
+  AddOne=1
+  
+  WidthPositStart=$StandardZero
+  HeightPositStart=$StandardZero
+  TempWidthPositEnd=`expr $OriginImageWidth / $CropSizeW`
+  TempHeightPositEnd=`expr $OriginImageHeight / $CropSizeH`
+  
+  ##  In no remainder case convert will output origin image as last crop piece(AddOne) because 
+  ##  "convert -geometry error", for this reason check "remainder" for "AddOne" or Not.
+  #
+  #WidthPositEnd=`expr $TempWidthPositEnd + $AddOne`  
+  #HeightPositEnd=`expr $TempHeightPositEnd + $AddOne`
+  #
+  if [ `expr $OriginImageWidth % $CropSizeW` -eq "$StandardZero" ];then
+    WidthPositEnd=`expr $TempWidthPositEnd`
+  else
+    WidthPositEnd=`expr $TempWidthPositEnd + $AddOne`
+  fi
+  
+  if [ `expr $OriginImageHeight % $CropSizeH` -eq "$StandardZero" ];then
+    HeightPositEnd=`expr $TempHeightPositEnd`
+  else
+    HeightPositEnd=`expr $TempHeightPositEnd + $AddOne`
+  fi
+  
+  ##  for debug
+  #echo $WidthPositStart $HeightPositStart $WidthPositEnd $HeightPositEnd
+  
+  for ((TempWidthPosit=$WidthPositStart;TempWidthPosit<$WidthPositEnd;TempWidthPosit++))
+  do
+     for ((TempHeightPosit=$HeightPositStart;TempHeightPosit<$HeightPositEnd;TempHeightPosit++))
+     do
+     
+     ##  convert -crop "$CropSizeW"x"$CropSizeH"+"$XOffSet"+"$YOffSet" $InImage $OutImage
+     OffSetX=`expr $TempWidthPosit \* $CropSizeW`
+     OffSetY=`expr $TempHeightPosit \* $CropSizeH`
+     COMMAND="convert -crop "$CropSizeW"x"$CropSizeH"+"$OffSetX"+"$OffSetY" "$TempfsDir"/"$OriginImageName" "$OutputDir"/x"`expr $OffSetX + $MultiRegionOffSetX`"_y"`expr $OffSetY + $MultiRegionOffSetY`"_w"$CropSizeW"_h"$CropSizeH"_"$OriginImageName""
+     #echo $COMMAND
+     echo $COMMAND `$COMMAND`
+    
+    done
+  done
+}
+
+
+##  This New function is used to save I/O time problem, let each input image just load in memory onece.
+##  But, the out image name have to flip to right array name
+##  "convert -crop 500x500 Petco1920_4k.jpg out.jpg" output out-xxx.jpg.
+NewMainComputeCropCommandOneNode()
+{
+  BeCropFile=""$CropSizeW"x"$CropSizeH" "$TempfsDir"/"$OriginImageName""
+  OutCropFile=""$OutputDir"/Multix"$MultiRegionOffSetX"_Multiy"$MultiRegionOffSetY"_w"$CropSizeW"_h"$CropSizeH"_"Clip""
+  COMMAND="convert -crop  $BeCropFile $OutCropFile"
+     echo $COMMAND `$COMMAND`
+}
+
+
+##  This create html file to view crop piece.
+##
+NewMainCreatCropImageHTHL()
+{
+  TestFile="/home/user/NchcTsbCrop/"$OriginImageName".html"
+  AddOne=1
+  
+  WidthPositStart=$StandardZero
+  HeightPositStart=$StandardZero
+  TempWidthPositEnd=`expr $OriginImageWidth / $CropSizeW`
+  TempHeightPositEnd=`expr $OriginImageHeight / $CropSizeH`
+  
+  ##  In no remainder case convert will output origin image as last crop piece(AddOne) because 
+  ##  "convert -geometry error", for this reason check "remainder" for "AddOne" or Not.
+  #
+  #WidthPositEnd=`expr $TempWidthPositEnd + $AddOne`  
+  #HeightPositEnd=`expr $TempHeightPositEnd + $AddOne`
+  #
+  if [ `expr $OriginImageWidth % $CropSizeW` -eq "$StandardZero" ];then
+    WidthPositEnd=`expr $TempWidthPositEnd`
+  else
+    WidthPositEnd=`expr $TempWidthPositEnd + $AddOne`
+  fi
+  
+  if [ `expr $OriginImageHeight % $CropSizeH` -eq "$StandardZero" ];then
+    HeightPositEnd=`expr $TempHeightPositEnd`
+  else
+    HeightPositEnd=`expr $TempHeightPositEnd + $AddOne`
+  fi
+
+  ##  Clip is form 0 to wc x hc. also equle to 
+  ClipNum="0"
+ 
+  ##  To write html header, this is not necessary.
+  echo "$OriginImageName" >> $TestFile
+  echo "<HTML>"  >> $TestFile
+  echo "<HEAD>"  >> $TestFile
+  echo "<TITLE>CropImageHTML</TITLE>" >> $TestFile
+  echo "</HEAD>" >> $TestFile
+  echo "<BODY>"  >> $TestFile
+
+  ##  The html array is resver of MainComputeCropCommandOneNode() so just replace the for loop.
+  #for ((TempWidthPosit=$WidthPositStart;TempWidthPosit<$WidthPositEnd;TempWidthPosit++))
+  for ((TempHeightPosit=$HeightPositStart;TempHeightPosit<$HeightPositEnd;TempHeightPosit++))
+  do
+    echo "<nobr>" >> $TestFile
+    #for ((TempHeightPosit=$HeightPositStart;TempHeightPosit<$HeightPositEnd;TempHeightPosit++))
+    for ((TempWidthPosit=$WidthPositStart;TempWidthPosit<$WidthPositEnd;TempWidthPosit++))
+    do
+
+      ##  convert -crop "$CropSizeW"x"$CropSizeH"+"$XOffSet"+"$YOffSet" $InImage $OutImage
+      OffSetX=`expr $TempWidthPosit \* $CropSizeW`
+      OffSetY=`expr $TempHeightPosit \* $CropSizeH`
+    
+      PieceImage=""$OutputDir"/x"`expr $OffSetX + $MultiRegionOffSetX`"_y"`expr $OffSetY + $MultiRegionOffSetY`"_w"$CropSizeW"_h"$CropSizeH"_"$OriginImageName""
+      #echo $PieceImage
+      
+      ##  NEW
+      ClipBeforeName=""$OutputDir"/Multix"$MultiRegionOffSetX"_Multiy"$MultiRegionOffSetY"_w"$CropSizeW"_h"$CropSizeH"_"Clip-$ClipNum""
+      ClipAfterName=""$OutputDir"/x"`expr $OffSetX + $MultiRegionOffSetX`"_y"`expr $OffSetY + $MultiRegionOffSetY`"_w"$CropSizeW"_h"$CropSizeH"_"$OriginImageName""
+
+      ClipMv="mv $ClipBeforeName $ClipAfterName"
+      echo $ClipMv `$ClipMv`
+      ##  NEW
+      ClipNum=`expr $ClipNum + 1`
+
+      echo "<img src=""$PieceImage"">"  >> $TestFile
+
+    done
+    echo "</nobr> " >> $TestFile
+  done
+
+  echo "</BODY>" >> $TestFile
+  echo "</HTML>" >> $TestFile
+}
+## =============================  MainImageCrop  ============================= ##
