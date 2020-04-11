@@ -38,9 +38,12 @@ Or just run MainImageCrop in local machine for [Crop image to setting piece size
 
 
 NOTE:
+
 DsitriNodeDirPrefix="/scratch/local" is for medusa, if you want run on your machine you should change some dir parameter.
+
 if DsitriNodeDirPrefix not be set. the $OUTDIR will become /$OUTDIR
 ---->>""$DsitriNodeDirPrefix"/"$DistriOutImage""
+
 --->> ""/"$DistriOutImage" -->> /OUTDIR in root path not local path.
 
 ## Method
