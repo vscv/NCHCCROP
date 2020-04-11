@@ -12,7 +12,7 @@ A very very old distributed image split/crop practice using Bash and ImageMagick
 
 當時為了練習shell programing本專案完全使用BASH語法，沒有物件導向或艱澀的演算法，大部分只是在處理切割檔案相關的尺寸變數而已，最後由ImageMagick的convert工具完成image patch裁切。
 
-ps.現在的電腦可輕易處理切圖請見 - [簡單做法](#簡單做法)
+ps.現在的硬體規格可輕易處理切圖請見 - [簡單做法](#簡單做法)
 
 ## 注意
 * 僅供回憶Bash語法使用
