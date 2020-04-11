@@ -1,3 +1,5 @@
+![image](img/分割示意圖.jpg)
+
 # NCHCCROP
 A very very old distributed image split/crop practice using Bash and ImageMagick.
 
