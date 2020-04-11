@@ -1,5 +1,5 @@
-![flownotw](img/分割示意圖.jpg)
-* Image is Perseus Molecular Cloud from JPL. 
+![title name](img/分割示意圖.jpg)
+Perseus Molecular Cloud from JPL. 
 
 # NCHCCROP
 A very very old distributed image split/crop practice using Bash and ImageMagick.
