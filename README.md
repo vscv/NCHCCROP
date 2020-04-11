@@ -6,7 +6,8 @@
 A very very old distributed image split/crop practice using Bash and ImageMagick.
 
 ## 前言
-超大高解析度影像切割/截圖/切圖的需求大約是在2006~2007年開始，當時對超大型地理圖資的顯示往往受限於本機硬體規格，後來結合LoD與串流技術讓一般裝置都能經由瀏覽器流暢地展示高解析圖資。然而從原始圖轉換成可供串流傳輸大小的patch在當時的硬體規格下效能不佳，因此對大型空照/衛照圖等原始圖轉換成in-house displayer, TSB, Google Map等可用的LoD多解析度小圖需求下，寫一個利用12+1的電腦叢集(TDW, tiled display wall cluster)將各切圖task藉由ssh分散到各節點中執行以加快處理速度，檔案則放在master node的/shm(仿ram disk)中讓各節點可以同時access。當時為了練習shell programing本專案完全使用BASH語法，沒有物件導向或艱澀的演算法，大部分只是在處理切割檔案相關的尺寸變數而已，最後由ImageMagick的convert工具完成image patch裁切。
+超大高解析度影像切割/截圖/切圖的需求大約是在2006~2007年開始，當時對超大型地理圖資的顯示往往受限於本機硬體規格，後來結合LoD與串流技術讓一般裝置都能經由瀏覽器流暢地展示高解析圖資。然而從原始圖轉換成可供串流傳輸大小的patch在當時的硬體規格下效能不佳，因此對大型空照/衛照圖等原始圖轉換成in-house displayer, TSB, Google Map等可用的LoD多解析度小圖需求下，寫一個利用12+1的電腦叢集(TDW, tiled display wall cluster)將各切圖task藉由ssh分散到各節點中執行以加快處理速度，檔案則放在master node的/shm(仿ram disk)中讓各節點可以同時access。
+當時為了練習shell programing本專案完全使用BASH語法，沒有物件導向或艱澀的演算法，大部分只是在處理切割檔案相關的尺寸變數而已，最後由ImageMagick的convert工具完成image patch裁切。
 
 ps.現在的電腦可輕易處理切圖請見 - [簡單做法](#簡單做法)
 
